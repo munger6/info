@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.stock.info.dao.StockMapper" >
+
+    <!--<resultMap id="STK_STOCK_DO" type="">-->
+
+    <!--</resultMap>-->
+
+
+
+    <select id="query"  resultType="StkStockDO">
+        SELECT code, name FROM stk_stock WHERE name = '比亚迪'
+    </select>
+
+</mapper>
