@@ -1,16 +1,13 @@
 package com.stock.info.service;
 
-import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+/**
+ * 证券财务报表服务
+ *      v1.0 ：实现财务报表的手动全量下载
+ */
 public interface StkStockEarningsService {
-
-    /**
-     * 查询
-     * @return
-     */
-    public Map<String, Object> query();
 
 
     /**
@@ -24,7 +21,7 @@ public interface StkStockEarningsService {
 
 
     /**
-     * 查询股票列表
+     * 查询股票列表(从tushare查询)
      * @param isHs  是否沪深港通标的，N否 H沪股通 S深股通
      * @param listStatus  上市状态： L上市 D退市 P暂停上市，默认L
      * @param exchange  交易所 SSE上交所 SZSE深交所 HKEX港交所(未上线)

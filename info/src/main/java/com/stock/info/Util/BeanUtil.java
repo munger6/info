@@ -1,6 +1,7 @@
 package com.stock.info.Util;
 
-import org.apache.log4j.spi.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cglib.beans.BeanMap;
 
 import java.lang.reflect.Field;
@@ -8,15 +9,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.logging.Logger;
 
+/**
+ * Bean工具类
+ */
 public class BeanUtil {
-//    private Logger logger = LoggerFactory
 
+    /**
+     * 将对象转换为Map， null则不转换
+     * @param obj
+     * @return
+     */
     public static Map<String, Object> convertToMap(Object obj) {
         return convertToMap(obj, false);
     }
 
+    /**
+     * 转换对象为Map
+     * @param obj   被转换对象
+     * @param convertNull  是否转换null数据信息
+     * @return
+     */
     public static Map<String, Object> convertToMap(Object obj, boolean convertNull) {
         if(obj == null){
             return null;
@@ -48,7 +61,7 @@ public class BeanUtil {
                 }
 
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                return null;
             }
         }
 

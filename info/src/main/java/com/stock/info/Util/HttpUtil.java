@@ -2,7 +2,6 @@ package com.stock.info.Util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.stock.info.constant.PublicConstant;
 import org.apache.commons.collections.MapUtils;
 import org.apache.http.HttpEntity;
@@ -19,7 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HttpUtil {
 

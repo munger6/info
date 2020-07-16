@@ -62,11 +62,6 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     //资产负债表
     protected static String apiCashflow = "cashflow";
 
-    @Override
-    public Map<String, Object> query() {
-        StkStockDO stkStockDO = stockMapper.query();
-        return BeanUtil.convertToMap(stkStockDO);
-    }
 
     @Override
     public Map<String, Object> queryStockListByContion(String isHs, String listStatus, String exchange) {

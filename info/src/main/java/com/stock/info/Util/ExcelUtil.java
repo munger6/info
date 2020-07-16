@@ -14,7 +14,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /***
- *
+ *  excel工具类：提供excel写入的基础方法
+ *      创建excel、sheet、行、列、图标等等....
  */
 public class ExcelUtil {
     //支持为excel2007 xmlx格式文件
@@ -26,6 +27,10 @@ public class ExcelUtil {
     private ExcelUtil() {
     }
 
+    /***
+     * 初始化一个XSSFWorkbook
+     * @return
+     */
     private static XSSFWorkbook getWorkbook() {
         if (null == workbook) {
             synchronized (Workbook.class) {
@@ -36,6 +41,7 @@ public class ExcelUtil {
         }
         return workbook;
     }
+
 
     /**
      * 创建一个sheet页
@@ -56,6 +62,7 @@ public class ExcelUtil {
     public static void setColumnWidth(XSSFSheet sheet, int columnIndex, int byteSize) {
         sheet.setColumnWidth(columnIndex, byteSize * 256);
     }
+
 
     /**
      * 创建标题行
@@ -277,12 +284,14 @@ public class ExcelUtil {
         return false;
     }
 
+
     /**
      * 删除工作簿（文件保存好后则删除旧的工作簿）
      */
     private static void deleteWorkbook() {
         workbook = null;
     }
+
 
     private enum FontNameEnum {
         SIM_SUM("宋体", "SimSum"),

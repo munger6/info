@@ -22,11 +22,6 @@ public class StockEarningsController {
     @Autowired
     StkStockEarningsService stkStockEarningsService;
 
-    @RequestMapping(value = "query")
-    public Map<String,Object> query(){
-        return stkStockEarningsService.query();
-    }
-
 
     /**
      * 查询基础测试表信息

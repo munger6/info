@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+/**
+ * 证券建模Excel写入操作
+ */
 @Service
 @Repository
 public class StkStockExcelServiceImpl implements StkStockExcelService {
