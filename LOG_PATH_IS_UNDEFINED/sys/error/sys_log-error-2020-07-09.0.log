@@ -1,6 +1,0 @@
-2020-07-09 20:52:45.380 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
-2020-07-09 20:52:45.816 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
-2020-07-09 20:52:46.615 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
-2020-07-09 21:21:43.942 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
-2020-07-09 21:21:44.124 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
-2020-07-09 21:21:44.333 [restartedMain] ERROR org.apache.catalina.core.AprLifecycleListener - An incompatible version [1.1.27] of the Apache Tomcat Native library is installed, while Tomcat requires version [1.2.14]
