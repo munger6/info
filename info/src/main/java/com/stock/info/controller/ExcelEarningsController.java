@@ -2,9 +2,11 @@ package com.stock.info.controller;
 
 
 import com.stock.info.Util.PublicUtil;
+import com.stock.info.constant.enums.EarningModeTypeEnum;
 import com.stock.info.domain.ResultPage;
 import com.stock.info.service.StkStockExcelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,6 +42,28 @@ public class ExcelEarningsController {
     }
 
 
+    /**
+     * 财务报表建模
+     * @param code   证券代码，不传则按照条件查询所有符合条件证券代码进行计算
+     * @param type   模型-1  王重涛建模     模型-2 杨林建模
+     * @param timeLong   时长信息
+     * @return
+     */
+    @RequestMapping(value = "createmModeExcel")
+    public ResultPage createmModeExcel(String code, String type, String timeLong){
+        try {
+            if(StringUtils.isEmpty(timeLong)){
+                timeLong = "10";
+            }
+            if(EarningModeTypeEnum.getEnumByCode(type) == null){
+                return PublicUtil.initResult(false,"请传入有效的模型类型",null);
+            }
+            boolean isSuccess = stkStockExcelService.createEarningsModeExcel(code, type, timeLong);
+            return PublicUtil.initResult(isSuccess,"创建证券代码"+code+"财务报表信息成功",isSuccess);
+        } catch (Exception e) {
+            return PublicUtil.initResult(false,"创建证券代码"+code+"财务报表信息失败,失败原因：" + e.getMessage(),null);
+        }
+    }
 
     /**
      * todo  自主建模；根据建模方式生成建模财务报表
