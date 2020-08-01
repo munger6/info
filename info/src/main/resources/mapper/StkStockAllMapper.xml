@@ -18,6 +18,8 @@
     <result column="is_hs" property="isHs" jdbcType="VARCHAR" />
     <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
   </resultMap>
+
+
   <insert id="insert" parameterType="com.stock.info.domain.entity.StkStockAll" >
     insert into stk_stock_all (ts_code, symbol, `name`, 
       area, industry, fullname, 
@@ -52,4 +54,20 @@
     curr_type, list_status, list_date, delist_date, is_hs, create_date
     from stk_stock_all order by ts_code asc
   </select>
+
+  <select id="selectIndexMessage" resultType="java.util.List" >
+    select #{indexColumnName}    from  #{indexTable}
+    where
+    end_date in
+    <foreach collection="dateList" item="item" index="index"
+             open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+
+    <if  test = "contion!= null and  contion != ''">
+      and #{exchange}
+    </if>
+    order by end_date desc
+  </select>
+
 </mapper>

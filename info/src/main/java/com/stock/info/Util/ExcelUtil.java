@@ -1,16 +1,19 @@
 package com.stock.info.Util;
 
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /***
  *  excel工具类：提供excel写入的基础方法
@@ -25,11 +28,11 @@ public class ExcelUtil {
     }
 
     /***
-     * 初始化一个XSSFWorkbook
+     * 初始化一个HSSFWorkbook
      * @return
      */
-    private static XSSFWorkbook getWorkbook() {
-        return new XSSFWorkbook();
+    public static HSSFWorkbook getWorkbook() {
+        return new HSSFWorkbook();
     }
 
 
@@ -40,7 +43,7 @@ public class ExcelUtil {
      * @param sheetName sheet页的名称
      * @return 返回sheet对象
      */
-    public static XSSFSheet createSheetWithName(XSSFWorkbook book,String sheetName) {
+    public static HSSFSheet createSheetWithName(HSSFWorkbook book, String sheetName) {
         return book.createSheet(sheetName);
     }
 
@@ -50,7 +53,7 @@ public class ExcelUtil {
      * @param columnIndex 列标
      * @param byteSize    可以显示的字节数
      */
-    public static void setColumnWidth(XSSFSheet sheet, int columnIndex, int byteSize) {
+    public static void setColumnWidth(HSSFSheet sheet, int columnIndex, int byteSize) {
         sheet.setColumnWidth(columnIndex, byteSize * 256);
     }
 
@@ -62,14 +65,14 @@ public class ExcelUtil {
      * @param sheet sheet
      * @param headerArray 标题列名组成的数组
      */
-    public static XSSFRow createHeaderRow(XSSFWorkbook book,XSSFSheet sheet, String[] headerArray) {
+    public static HSSFRow createHeaderRow(HSSFWorkbook book,HSSFSheet sheet, String[] headerArray) {
         sheet.setDefaultColumnWidth((short) DEFAULT_WIDTH);// 设置表格默认列宽度为10个字节
-        XSSFRow row = sheet.createRow(0);//第一行
+        HSSFRow row = sheet.createRow(0);//第一行
         row.setHeight((short) (30 * 15.625));
         for (int i = 0; i < headerArray.length; i++) {
             setSizeIfNecessary(sheet, i, headerArray[i]);
-            XSSFCell cell = row.createCell(i);//新建单元格
-            XSSFRichTextString text = new XSSFRichTextString(headerArray[i]);
+            HSSFCell cell = row.createCell(i);//新建单元格
+            HSSFRichTextString text = new HSSFRichTextString(headerArray[i]);
             cell.setCellValue(text);//设置文本
             cell.setCellStyle(getDefaultHeaderCellStyle(book));//设置样式
         }
@@ -85,18 +88,30 @@ public class ExcelUtil {
      * @param columnData 每一列的数据
      * @return 返回行对象，row可用于获取特定单元格row.getCell()，再进行特定的设置（不想使用这个默认设置的时候）
      */
-    public static XSSFRow createRow(XSSFWorkbook book,XSSFSheet sheet, int rowNum, String[] columnData) {
-        XSSFRow row = sheet.createRow(rowNum);
+    public static HSSFRow createRow(HSSFWorkbook book, HSSFSheet sheet, int rowNum, List<String> columnData,String mode) {
+        HSSFRow row = sheet.createRow(rowNum);
         row.setHeight((short) (21 * 15.625));
-        for (int i = 0; i < columnData.length; i++) {
-            XSSFCell cell = row.createCell(i);//新建单元格
-            setSizeIfNecessary(sheet, i, columnData[i]);
-            XSSFRichTextString text = new XSSFRichTextString(columnData[i]);
-            cell.setCellValue(text);//设置文本
+        for (int i = 0; i < columnData.size(); i++) {
+            HSSFCell cell = row.createCell(i);//新建单元格
+            setSizeIfNecessary(sheet, i, columnData.get(i));
+            if(NumberUtils.isDigits(columnData.get(i))){
+                cell.setCellValue(new BigDecimal(columnData.get(i)).doubleValue());//设置文本
+            }else{
+                HSSFRichTextString text = new HSSFRichTextString(columnData.get(i));
+                if(MODE_FORMULA.equals(mode) && i > 0){
+                    cell.setCellFormula(columnData.get(i));
+                }else{
+                    cell.setCellValue(text);//设置文本
+                }
+            }
             cell.setCellStyle(getDefaultCellStyle(book));//设置样式
         }
         return row;
     }
+
+    //单元格数据表达式：  方式
+    private final static String MODE_FORMULA = "experisson";
+
 
 
     /**
@@ -107,11 +122,11 @@ public class ExcelUtil {
      * @param columnData   列数据
      * @return
      */
-    public static XSSFRow createSpecailRow(XSSFWorkbook book,XSSFSheet sheet, int rowNum, String[] columnData) {
-        XSSFRow row = sheet.createRow(rowNum);
+    public static HSSFRow createSpecailRow(HSSFWorkbook book,HSSFSheet sheet, int rowNum, String[] columnData) {
+        HSSFRow row = sheet.createRow(rowNum);
         for (int i = 0; i < columnData.length; i++) {
-            XSSFCell cell = row.createCell(i);//新建单元格
-            XSSFRichTextString text = new XSSFRichTextString(columnData[i]);
+            HSSFCell cell = row.createCell(i);//新建单元格
+            HSSFRichTextString text = new HSSFRichTextString(columnData[i]);
             cell.setCellValue(text);//设置文本
             cell.setCellStyle(getDefaultCellStyle(book));//设置样式
         }
@@ -125,7 +140,7 @@ public class ExcelUtil {
      * @param columnIndex 列标
      * @param cellData    单元格的数据
      */
-    private static void setSizeIfNecessary(XSSFSheet sheet, int columnIndex, String cellData) {
+    private static void setSizeIfNecessary(HSSFSheet sheet, int columnIndex, String cellData) {
         if (null == cellData || "".equals(cellData)){
             return;
         }
@@ -144,7 +159,7 @@ public class ExcelUtil {
      * @param startColumn 起始列
      * @param endColumn   结束列
      */
-    public static void crossingRowsAndColumns(XSSFSheet sheet, int startRow, int endRow, int startColumn, int endColumn) {
+    public static void crossingRowsAndColumns(HSSFSheet sheet, int startRow, int endRow, int startColumn, int endColumn) {
         sheet.addMergedRegion(new CellRangeAddress(startRow, endRow, startColumn, endColumn));
     }
 
@@ -154,16 +169,16 @@ public class ExcelUtil {
      *    https://blog.csdn.net/lsh15846393847/article/details/93199909
      * @return 样式对象
      */
-    private static CellStyle getDefaultHeaderCellStyle(XSSFWorkbook book) {
+    private static CellStyle getDefaultHeaderCellStyle(HSSFWorkbook book) {
         if (null != myHeaderCellStyle){
             return myHeaderCellStyle;
         }
         CellStyle cellStyle = getDefaultCellStyle(book);
         cellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());//背景色
         cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);//填充背景色
-        XSSFFont font = getDefaultFont(book);
+        HSSFFont font = getDefaultFont(book);
         font.setFontName(FontNameEnum.SIM_HEI.getFormalName());
-        font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);//粗体显示
+        font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);//粗体显示
         cellStyle.setFont(font);//选择需要用到的字体格式
         return cellStyle;
     }
@@ -174,17 +189,17 @@ public class ExcelUtil {
      * @param book excel文件对象
      * @return 样式对象
      */
-    public static CellStyle getDefaultCellStyle(XSSFWorkbook book) {
+    public static CellStyle getDefaultCellStyle(HSSFWorkbook book) {
         if (null != myCellStyle){
             return myCellStyle;
         }
         CellStyle cellStyle = book.createCellStyle();
-        cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER); // 居中
-        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);// 上下居中
-        cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);//上边框
-        cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN); //下边框
-        cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);//左边框
-        cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);//右边框
+        cellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER); // 居中
+        cellStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);// 上下居中
+        cellStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);//上边框
+        cellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN); //下边框
+        cellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);//左边框
+        cellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);//右边框
         cellStyle.setWrapText(true);//设置自动换行
         cellStyle.setFont(getDefaultFont(book));//选择需要用到的字体格式
         return cellStyle;
@@ -196,11 +211,11 @@ public class ExcelUtil {
      * @param book  excel文件
      * @return 字体对象，如果外部需要获取字体，可将此方法设置为public
      */
-    private static XSSFFont getDefaultFont(XSSFWorkbook book) {
+    private static HSSFFont getDefaultFont(HSSFWorkbook book) {
         if (null != myFont){
             return myFont;
         }
-        XSSFFont font = book.createFont();
+        HSSFFont font = book.createFont();
         font.setFontName(FontNameEnum.MICROSOFT_YA_HEI.getFormalName());
         font.setFontHeightInPoints((short) 10);//设置字体大小
         return font;
@@ -213,13 +228,21 @@ public class ExcelUtil {
      * @param filePath 文件全路径
      * @throws IOException 文件操作异常
      */
-    public static void saveExcelFile(XSSFWorkbook book,String filePath) {
+    public static void saveExcelFile(HSSFWorkbook book,String filePath) {
+        FileOutputStream fileOutputStream = null;
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(filePath);//指定路径与名字和格式
+//            filePath   获取当前文档的命名信息
+            fileOutputStream = new FileOutputStream(filePath);//指定路径与名字和格式
             book.write(fileOutputStream);//将数据写出去
             fileOutputStream.close();//关闭输出流
         } catch (IOException e) {
-            e.printStackTrace();
+            if(fileOutputStream == null){
+                try {
+                    fileOutputStream.close();//关闭输出流
+                } catch (IOException e1) {
+
+                }
+            }
         }
     }
 
@@ -319,7 +342,7 @@ public class ExcelUtil {
 
     private static CellStyle myHeaderCellStyle = null;
     private static CellStyle myCellStyle = null;
-    private static XSSFFont myFont = null;
+    private static HSSFFont myFont = null;
 
     public static void setMyHeaderCellStyle(CellStyle cellStyle) {
         myHeaderCellStyle = cellStyle;
@@ -329,7 +352,7 @@ public class ExcelUtil {
         myCellStyle = cellStyle;
     }
 
-    public static void setMyFont(XSSFFont font) {
+    public static void setMyFont(HSSFFont font) {
         myFont = font;
     }
 }

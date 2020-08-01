@@ -32,7 +32,7 @@ public class StkStockExcelServiceImpl implements StkStockExcelService {
     @Override
     public boolean createEarningsModeExcel(String code, String type, String timeLong) {
         //初始化excel创建内容(根据type 获取计算配置类)
-        EarningsContext context = EarningsContext.getContext(type,timeLong);
+        EarningsContext context = EarningsContext.getContext(type,timeLong,code);
         if(context.isCanCreate()){
             return stockEarningsModeService.createModeExcel(context);
         }

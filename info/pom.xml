@@ -125,7 +125,13 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
-
+		<!-- 常用工具类封装： https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+				使用介绍：https://www.cnblogs.com/niunafei/p/12812711.html  -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.10</version>
+		</dependency>
 	</dependencies>
 
 	<build>

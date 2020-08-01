@@ -1,5 +1,7 @@
 package com.stock.info.service.mode.context;
 
+import java.util.TreeMap;
+
 /**
  * excel行书写规则
  */
@@ -22,6 +24,12 @@ public class ExcelLineRule {
      */
     private String value;
 
+    /**
+     * 变量参数；   依赖指标key为 beforeIndex
+     */
+    private TreeMap<String,String> variableParam;
+
+
     public ExcelLineRule(String lineName, String type, String value) {
         this.lineName = lineName;
         this.type = type;
@@ -29,6 +37,14 @@ public class ExcelLineRule {
     }
 
     //get and set
+    public TreeMap<String, String> getVariableParam() {
+        return variableParam;
+    }
+
+    public void setVariableParam(TreeMap<String, String> variableParam) {
+        this.variableParam = variableParam;
+    }
+
     public String getLineName() {
         return lineName;
     }

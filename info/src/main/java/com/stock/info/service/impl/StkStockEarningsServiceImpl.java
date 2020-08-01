@@ -7,14 +7,14 @@ import com.stock.info.Util.BeanUtil;
 import com.stock.info.Util.HttpUtil;
 import com.stock.info.Util.StringUtil;
 import com.stock.info.dao.*;
-import com.stock.info.domain.StkStockDO;
 import com.stock.info.domain.entity.*;
 import com.stock.info.service.StkStockEarningsService;
 import org.apache.commons.collections.MapUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +27,7 @@ import java.util.Map;
 
 @Service
 @Repository
+@PropertySource("classpath:application.properties")
 public class StkStockEarningsServiceImpl implements StkStockEarningsService {
 
     @jdk.nashorn.internal.runtime.logging.Logger
@@ -61,11 +62,14 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     protected static String apiBalance = "balancesheet";
     //资产负债表
     protected static String apiCashflow = "cashflow";
+    //资产负债表
+    @Value("${tushare.Token}")
+    protected String token;
 
 
     @Override
     public Map<String, Object> queryStockListByContion(String isHs, String listStatus, String exchange) {
-        Map<String, Object> paramMap = HttpUtil.initParam(testApiName);
+        Map<String, Object> paramMap = HttpUtil.initParam(testApiName, token);
         Map<String,Object> params = new HashMap<>();
         params.put("is_hs",isHs);
         params.put("list_stauts",listStatus);
@@ -114,7 +118,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadStockListFromTushare(String isHs, String listStatus, String exchange) {
-        Map<String, Object> paramMap = HttpUtil.initParam(testApiName);
+        Map<String, Object> paramMap = HttpUtil.initParam(testApiName, token);
         Map<String,Object> params = new HashMap<>();
         params.put("is_hs",isHs);
         params.put("list_stauts",listStatus);
@@ -169,7 +173,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadIncomeFromTushare(String code, String date, String startDate, String endDate, String period, String reportType) {
-        Map<String, Object> paramMap = HttpUtil.initParam(apiIncome);
+        Map<String, Object> paramMap = HttpUtil.initParam(apiIncome, token);
         Map<String,Object> params = new HashMap<>();
         params.put("ts_code",code);
         params.put("ann_date",date);
@@ -225,7 +229,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadBalanceFromTushare(String code, String date, String startDate, String endDate, String period, String reportType) {
-        Map<String, Object> paramMap = HttpUtil.initParam(apiBalance);
+        Map<String, Object> paramMap = HttpUtil.initParam(apiBalance, token);
         Map<String,Object> params = new HashMap<>();
         params.put("ts_code",code);
         params.put("ann_date",date);
@@ -280,7 +284,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadCashflowFromTushare(String code, String date, String startDate, String endDate, String period, String reportType) {
-        Map<String, Object> paramMap = HttpUtil.initParam(apiCashflow);
+        Map<String, Object> paramMap = HttpUtil.initParam(apiCashflow, token);
         Map<String,Object> params = new HashMap<>();
         params.put("ts_code",code);
         params.put("ann_date",date);
@@ -326,7 +330,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadIndicatorFromTushare(String code, String date, String startDate, String endDate, String period) {
-        Map<String, Object> paramMap = HttpUtil.initParam("fina_indicator");
+        Map<String, Object> paramMap = HttpUtil.initParam("fina_indicator", token);
         Map<String,Object> params = new HashMap<>();
         params.put("ts_code",code);
         params.put("ann_date",date);
@@ -380,7 +384,7 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Override
     @Transactional(rollbackFor = {RuntimeException.class, Error.class})
     public String downloadMainbzFromTushare(String code, String type, String startDate, String endDate, String period) {
-        Map<String, Object> paramMap = HttpUtil.initParam("fina_mainbz");
+        Map<String, Object> paramMap = HttpUtil.initParam("fina_mainbz", token);
         Map<String,Object> params = new HashMap<>();
         params.put("ts_code",code);
         params.put("start_date",startDate);
@@ -421,4 +425,9 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
         return result;
     }
 
+
+    //set
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

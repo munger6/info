@@ -1,6 +1,9 @@
 package com.stock.info.Util;
 
 import com.stock.info.constant.PublicConstant;
+import org.apache.commons.collections.MapUtils;
+
+import java.util.Map;
 
 public class StringUtil {
 
@@ -23,4 +26,31 @@ public class StringUtil {
         return buffer.toString();
     }
 
+
+    /**
+     * 转换字母为ascii码,然后进位
+     * @param val
+     * @param i
+     */
+    public static String addAsciiCode(String val, int i) {
+        char c = val.charAt(1);
+        int number = (int) c;
+        number += i;
+        return String.valueOf((char) number);
+    }
+
+    /**
+     * 循环替代所有的参数
+     * @param expersion
+     * @param tempVariable
+     * @return
+     */
+    public static String replaceAll(String expersion, Map<String, String> tempVariable) {
+        if(MapUtils.isNotEmpty(tempVariable)){
+            for (String key : tempVariable.keySet()){
+                expersion = expersion.replaceAll("\\{" + key + "\\}",tempVariable.get(key));
+            }
+        }
+        return expersion;
+    }
 }

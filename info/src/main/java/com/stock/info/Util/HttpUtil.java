@@ -166,10 +166,10 @@ public class HttpUtil {
      * @param apiName  请求apiName
      * @return
      */
-    public static Map<String,Object> initParam(String apiName){
+    public static Map<String,Object> initParam(String apiName, String token){
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("api_name",apiName);
-        paramMap.put("token", PublicConstant.tushareToken);
+        paramMap.put("token", token);
         paramMap.put("fields","");
         return paramMap;
     }

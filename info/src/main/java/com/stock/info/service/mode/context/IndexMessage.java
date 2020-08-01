@@ -1,48 +1,43 @@
 package com.stock.info.service.mode.context;
 
 
+import com.stock.info.constant.PublicConstant;
+import com.stock.info.constant.enums.IndexMessageEnum;
+
 /**
  * 指标信息
  */
 public class IndexMessage {
 
-    // 指标名
-    private String indexCode;
-
-    // 指标表
-    private String indexTable;
-
-    //指标列名
-    private String indexColumnName;
+    private IndexMessageEnum indexMessageEnum;
 
     //指标周期（支持年--YEAR /季度）
-    private String period = "YEAR";
+    private String period = PublicConstant.YEAR;
 
-
+    public IndexMessage(IndexMessageEnum indexMessageEnum) {
+        this.indexMessageEnum = indexMessageEnum;
+    }
 
     //get and set
     public String getIndexCode() {
-        return indexCode;
+        if(indexMessageEnum == null){
+            return "";
+        }
+        return indexMessageEnum.getCode();
     }
 
-    public void setIndexCode(String indexCode) {
-        this.indexCode = indexCode;
-    }
-
-    public String getIndexTable() {
-        return indexTable;
-    }
-
-    public void setIndexTable(String indexTable) {
-        this.indexTable = indexTable;
+    public String getIndexTable()  {
+        if(indexMessageEnum == null){
+            return "";
+        }
+        return indexMessageEnum.getTableName();
     }
 
     public String getIndexColumnName() {
-        return indexColumnName;
-    }
-
-    public void setIndexColumnName(String indexColumnName) {
-        this.indexColumnName = indexColumnName;
+        if(indexMessageEnum == null){
+            return "";
+        }
+        return indexMessageEnum.getColumnName();
     }
 
     public String getPeriod() {
