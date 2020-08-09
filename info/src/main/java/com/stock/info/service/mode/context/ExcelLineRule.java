@@ -1,6 +1,6 @@
 package com.stock.info.service.mode.context;
 
-import java.util.TreeMap;
+import java.util.List;
 
 /**
  * excel行书写规则
@@ -25,23 +25,65 @@ public class ExcelLineRule {
     private String value;
 
     /**
+     * 是否首行空白
+     */
+    private boolean isFirstBlank;
+
+     /**
+     * 最大行长度
+     */
+    private int maxLineLength;
+
+    /**
      * 变量参数；   依赖指标key为 beforeIndex
      */
-    private TreeMap<String,String> variableParam;
+    private List<String> variableParam;
 
 
-    public ExcelLineRule(String lineName, String type, String value) {
+    /**
+     * 未来行信息处理规则
+     */
+    private ExcelLineRule futureLineRule;
+
+
+      public ExcelLineRule(String lineName, String type, String value) {
         this.lineName = lineName;
         this.type = type;
         this.value = value;
+        this.isFirstBlank = false;
+        this.maxLineLength = 10;
     }
 
+    public ExcelLineRule(String lineName, String type, String value,boolean isFirstBlank) {
+        this.lineName = lineName;
+        this.type = type;
+        this.value = value;
+        this.isFirstBlank = isFirstBlank;
+    }
+
+
     //get and set
-    public TreeMap<String, String> getVariableParam() {
+    public int getMaxLineLength() {
+        return maxLineLength;
+    }
+
+    public void setMaxLineLength(int maxLineLength) {
+        this.maxLineLength = maxLineLength;
+    }
+
+    public ExcelLineRule getFutureLineRule() {
+        return futureLineRule;
+    }
+
+    public void setFutureLineRule(ExcelLineRule futureLineRule) {
+        this.futureLineRule = futureLineRule;
+    }
+
+    public List<String> getVariableParam() {
         return variableParam;
     }
 
-    public void setVariableParam(TreeMap<String, String> variableParam) {
+    public void setVariableParam(List<String> variableParam) {
         this.variableParam = variableParam;
     }
 
@@ -57,4 +99,7 @@ public class ExcelLineRule {
         return value;
     }
 
+    public boolean isFirstBlank() {
+        return isFirstBlank;
+    }
 }

@@ -8,6 +8,8 @@ public enum  ExcelLineTypeEnum {
     INDEX("index","指标类型"),
     /**表达式类型*/
     EXPRESSION("expression","表达式类型"),
+    /**空白行*/
+    BLANK("blank","空白行"),
     ;
 
 

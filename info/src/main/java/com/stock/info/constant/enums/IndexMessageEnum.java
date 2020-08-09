@@ -11,9 +11,22 @@ public enum  IndexMessageEnum {
     /**股东权益合计(含少数股东权益)*/
     EQUITY("equity","股东权益合计(含少数股东权益)","stk_finance_banlancesheet","total_hldr_eqy_inc_min_int"),
 
-    ////////////////////////////////////////资产负债表//////////////////////////////////////////
-    /**加权平均净资产收益率*/
+    /**   实收资本（或股本）- 期末总股本*/
+    TOTAL_SHARE("TOTAL_SHARE","实收资本（或股本）","stk_finance_banlancesheet","total_share"),
+
+    ////////////////////////////////////////指标表//////////////////////////////////////////
+    /**加权平均净资产收益率 :    roe 可能需要采用去年净资产计算口径， 而不是加权平均*/
     ROE("roe","加权平均净资产收益率","roe_waa","stk_finance_indicator"),
+
+    ////////////////////////////////////////月线行情表//////////////////////////////////////////
+    /**年度收盘价  ： 接口号： monthly   输入参数：ts_code / trade_date / start_date  /  end_date  格式： YYYYMMDD*/
+    PRICE_M("price_month","年度收盘价","close","stk_finance_monthly"),
+
+    ////////////////////////////////////////周线行情表//////////////////////////////////////////
+    /**年度收盘价  ： 接口号： weekly   输入参数：ts_code / trade_date / start_date  /  end_date  格式： YYYYMMDD
+     *      主要指数代码：zs000001 - 上证指数；    1399001 -深圳成指  ；  zs399006 - 创业板；  zs399005 - 中小板
+     * */
+    PRICE_W("price_week","年度收盘价","close","stk_finance_weekly"),
 
     ;
     /**
