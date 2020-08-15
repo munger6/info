@@ -6,6 +6,7 @@ import com.stock.info.Util.ExcelUtil;
 import com.stock.info.Util.PublicUtil;
 import com.stock.info.Util.StringUtil;
 import com.stock.info.constant.PublicConstant;
+import com.stock.info.constant.enums.FilterContionTypeEnum;
 import com.stock.info.dao.StkStockAllMapper;
 import com.stock.info.domain.entity.StkStockAll;
 import com.stock.info.service.mode.ModeFilterContionStrategy;
@@ -15,13 +16,16 @@ import com.stock.info.service.mode.context.EarningsContext;
 import com.stock.info.service.mode.context.ExcelLineRule;
 import com.stock.info.service.mode.context.IndexMessage;
 import com.stock.info.service.mode.context.ModeExcelCreateRule;
-import com.stock.info.service.mode.strategy.RoeFilterContionStrategy;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -32,11 +36,14 @@ import java.util.*;
 
 @Service
 @Repository
-public class StockEarningsModeServiceImpl implements StockEarningsModeService, InitializingBean {
+public class StockEarningsModeServiceImpl implements StockEarningsModeService, InitializingBean , ApplicationContextAware {
     @jdk.nashorn.internal.runtime.logging.Logger
     private org.slf4j.Logger logger = LoggerFactory.getLogger("WARN_FILE");
 
+    /**容器*/
+    private ApplicationContext applicationContext;
     private Map<String, ModeFilterContionStrategy>  strategyMap;
+
 
     /** 证券总mapper*/
     @Autowired
@@ -57,29 +64,35 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
         //第二步：循环个股信息
         try {
             for (StkStockAll stk :allList){
-                //1、根据个股上市时间确定最新的计算时间(上市需公布之前三年财报数据，因此增加3年跨度)
+                //1、根据个股上市时间确定最新的计算时间(上市需公布之前三年财报数据,在上市日前3年与时间跨度取最近时间)
                 Date startDate = getStartDate(rule, stk);
-                Date endDate =DateOperation.getStartYear(DateOperation.addYears(DateOperation.parseDate(stk.getListDate(),DateOperation.DAY)                                    ,-1));
+                Date endDate =DateOperation.getStartYear(DateOperation.addYears(new Date(),-1));
 
                 //第三步：数据初始化，查询指定指标数据（eps，bps,年份总股本）
                 Map<String,List<String>> indexMap = getIndexMessage(rule, startDate, endDate);
 
                 //第四步： 初始化excel，创建标题信息
                 HSSFWorkbook book = ExcelUtil.getWorkbook();
+                HSSFSheet sheet = ExcelUtil.createSheetWithName(book,rule.getSheetName());
                 TitleHandler handler = titleHandlerMap.get(rule.getTitleHandler());
                 if(handler != null){
-                    handler.createTitle(book,context,startDate,endDate);
+                    handler.createTitle(stk, book, sheet,context,startDate,endDate);
                 }
                 //第五步：按照行写入数信息；
-                writeRuleExcel(book,rule,indexMap);
+                writeRuleExcel(book,sheet,rule,indexMap);
 
                 //第六步：导出excel
-                ExcelUtil.saveExcelFile(book,"F:\\mode\\test.xsl");
+                ExcelUtil.saveExcelFile(book,String.format("F:\\mode\\%s\\%s\\%s_%s.xsl",rule.getTitleHandler(),
+                        DateOperation.formatDate(new Date(),DateOperation.YEAR),stk.getFullname(),queryTitleIndex(indexMap, rule)));
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    protected String queryTitleIndex(Map<String, List<String>> indexMap, ModeExcelCreateRule rule) {
+        return "";
     }
 
     /**
@@ -88,8 +101,7 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
      * @param rule
      * @param indexMap
      */
-    private String writeRuleExcel(HSSFWorkbook book, ModeExcelCreateRule rule, Map<String, List<String>> indexMap) {
-        HSSFSheet sheet = ExcelUtil.createSheetWithName(book,rule.getSheetName());
+    private String writeRuleExcel(HSSFWorkbook book, HSSFSheet sheet, ModeExcelCreateRule rule, Map<String, List<String>> indexMap) {
         List<ExcelLineRule> lineRules = rule.getLineRules();
         ExcelLineRule lineRule;
         List<String> data = new ArrayList<>();
@@ -98,11 +110,11 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
             data.add(lineRule.getLineName());
             if("index".equals(lineRule.getType())){
                 data.addAll(indexMap.get(lineRule.getValue()));
-                ExcelUtil.createRow(book,sheet,rule.getStartLine(), data,"");
+                ExcelUtil.createRow(book,sheet,lineRule, data,"", rule.getStartLine() + i);
             }else if("expression".equals(lineRule.getType())){
                 //根据指标计算行 按照指定的表达式写入数据；
                 data.addAll(converExpression(lineRule, indexMap));
-                ExcelUtil.createRow(book,sheet,rule.getStartLine(),data,lineRule.getType());
+                ExcelUtil.createRow(book,sheet,lineRule,data,lineRule.getType(), rule.getStartLine() + i);
             }else{
                 logger.warn("暂不支持该行数据操作类型");
             }
@@ -119,27 +131,20 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
      */
     private List<String> converExpression(ExcelLineRule lineRule,  Map<String, List<String>>  indexMap) {
         String expersion = lineRule.getValue();
-        TreeMap<String, String> variableParam = lineRule.getVariableParam();
+        List<String> variableParam = lineRule.getVariableParam();
+        int length = lineRule.getMaxLineLength();
         List<String> result = new ArrayList<>();
 
-        if(MapUtils.isNotEmpty(variableParam) &&
-                variableParam.containsKey("beforeIndex")
-                && indexMap.containsKey(MapUtils.getString(variableParam,"beforeIndex"))){
-            List<String> beforeIndex = indexMap.get(MapUtils.getString(variableParam,"beforeIndex"));
-            int length = beforeIndex.size();
+        if(!CollectionUtils.isEmpty(variableParam)){
             for (int i = 1; i <= length; i++) {
                 Map<String,String> tempVariable = new HashMap<>();
-                for (String key : variableParam.keySet()) {
-                    if(key.startsWith("+")){
-                        String value = variableParam.get(key);
-                        value = StringUtil.addAsciiCode(value,i);
-                        tempVariable.put(key.substring(1), value);
+                for (String value : variableParam) {
+                    if(StringUtils.isNotBlank(value)){
+                        tempVariable.put("\\{param_" + value + "\\}", StringUtil.addAsciiCode(value,i));
+                        expersion = StringUtil.replaceAll(expersion,tempVariable);
                     }
                 }
-                if(MapUtils.isNotEmpty(tempVariable)){
-                    expersion = StringUtil.replaceAll(expersion,tempVariable);
-                    result.add(expersion);
-                }
+                result.add(expersion);
             }
         }
         return result;
@@ -211,7 +216,7 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
      * @return
      */
     private Date getStartDate(ModeExcelCreateRule rule, StkStockAll stk) throws ParseException {
-        Date startDate = DateOperation.addYears(new Date(),-3 - rule.getDataTimeLong() );
+        Date startDate = DateOperation.addYears(new Date(), -1 - rule.getDataTimeLong() );
         Date date = DateOperation.getStartYear(
                 DateOperation.addYears(DateOperation.parseDate(stk.getListDate(),DateOperation.DAY),-3));
         return startDate.before(date) ? date : startDate;
@@ -227,12 +232,13 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
     private List<StkStockAll> getStockList(ModeExcelCreateRule rule) {
         List<StkStockAll> allList = new ArrayList<>();
         if(!CollectionUtils.isEmpty(rule.getStockFilterConditions())){
+
             for (Map<String,Object> param:rule.getStockFilterConditions()){
-                allList = strategyMap.get("DEFAULT").filter(allList,param);
+                ModeFilterContionStrategy contionStrategy = strategyMap.get(MapUtils.getString(param,"index"));
+                if(contionStrategy != null){
+                    allList = contionStrategy.filter(allList,param);
+                }
             }
-        }else{
-            //      如果筛选信息不存在则执行全部个股
-            allList = strategyMap.get("DEFAULT").filter(null,null);
         }
         return allList;
     }
@@ -240,7 +246,20 @@ public class StockEarningsModeServiceImpl implements StockEarningsModeService, I
     @Override
     public void afterPropertiesSet() throws Exception {
         strategyMap = new HashMap<>();
-        strategyMap.put("ROE", new RoeFilterContionStrategy());
+        strategyMap.put(FilterContionTypeEnum.ROE_AVG_TEN.getCode(),
+                (ModeFilterContionStrategy)applicationContext.getBean("roeAvgFilterContionStrategy"));
+        strategyMap.put(FilterContionTypeEnum.LISTING_TIME_TOTAL.getCode(),
+                (ModeFilterContionStrategy)applicationContext.getBean("roeFilterContionStrategy"));
+        strategyMap.put(FilterContionTypeEnum.MARKET.getCode(),
+                (ModeFilterContionStrategy)applicationContext.getBean("marketFilterContionStrategy"));
 
+        titleHandlerMap = new HashMap<>();
+        titleHandlerMap.put("taotaoMode",(TitleHandler)applicationContext.getBean("taoTaoTitleHandler"));
+    }
+
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

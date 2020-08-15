@@ -41,19 +41,57 @@ public class ExcelLineRule {
 
 
     /**
-     * 未来行信息处理规则
+     * 行扩展规则（增速扩展（固定增速扩展/增速拟合扩展）、    汇总扩展sum()）
      */
-    private ExcelLineRule futureLineRule;
+    private ExtendLineRule extendLineRule;
 
 
-      public ExcelLineRule(String lineName, String type, String value) {
+    /**
+     * 查询指标信息类构造函数
+     * @param lineName
+     * @param type
+     * @param value
+     */
+    public ExcelLineRule(String lineName, String type, String value,Integer maxLineLength) {
         this.lineName = lineName;
         this.type = type;
         this.value = value;
         this.isFirstBlank = false;
-        this.maxLineLength = 10;
+        if(maxLineLength == null){
+            this.maxLineLength = 10;
+        }else{
+            this.maxLineLength = maxLineLength;
+        }
     }
 
+    /**
+     * 指标查询类 + 扩展规则 类构造函数
+     * @param lineName
+     * @param type
+     * @param value
+     * @param extendLineRule
+     */
+    public ExcelLineRule(String lineName, String type, String value,Integer maxLineLength,ExtendLineRule extendLineRule) {
+        this.lineName = lineName;
+        this.type = type;
+        this.value = value;
+        this.extendLineRule = extendLineRule;
+        this.isFirstBlank = false;
+        if(maxLineLength == null){
+            this.maxLineLength = 10;
+        }else{
+            this.maxLineLength = maxLineLength;
+        }
+    }
+
+
+    /***
+     *
+     * @param lineName
+     * @param type
+     * @param value
+     * @param isFirstBlank
+     */
     public ExcelLineRule(String lineName, String type, String value,boolean isFirstBlank) {
         this.lineName = lineName;
         this.type = type;
@@ -71,12 +109,8 @@ public class ExcelLineRule {
         this.maxLineLength = maxLineLength;
     }
 
-    public ExcelLineRule getFutureLineRule() {
-        return futureLineRule;
-    }
-
-    public void setFutureLineRule(ExcelLineRule futureLineRule) {
-        this.futureLineRule = futureLineRule;
+    public ExtendLineRule getExtendLineRule() {
+        return extendLineRule;
     }
 
     public List<String> getVariableParam() {

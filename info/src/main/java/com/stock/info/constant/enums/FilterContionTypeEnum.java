@@ -8,6 +8,8 @@ public enum  FilterContionTypeEnum {
     LISTING_TIME_TOTAL("listingTimeTotal","上市总时间"),
     /**十年roe平均值 低于十年则采用所有时间的平均数*/
     ROE_AVG_TEN("roeAvgTen","十年roe平均值"),
+    /**交易所： 存在或者不存在*/
+    MARKET("market","交易所"),
 
     ;
     /**

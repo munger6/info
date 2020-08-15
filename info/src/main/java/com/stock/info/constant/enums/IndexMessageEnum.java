@@ -6,7 +6,6 @@ public enum  IndexMessageEnum {
     INCOME("income","净利润(含少数股东损益)","stk_finance_income", "n_income"),
 
 
-
     ////////////////////////////////////////资产负债表//////////////////////////////////////////
     /**股东权益合计(含少数股东权益)*/
     EQUITY("equity","股东权益合计(含少数股东权益)","stk_finance_banlancesheet","total_hldr_eqy_inc_min_int"),

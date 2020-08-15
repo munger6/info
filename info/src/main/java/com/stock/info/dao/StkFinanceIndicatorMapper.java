@@ -1,6 +1,7 @@
 package com.stock.info.dao;
 
 import com.stock.info.domain.entity.StkFinanceIndicator;
+import com.stock.info.domain.pojo.StkIndexValuePojo;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -32,4 +33,11 @@ public interface StkFinanceIndicatorMapper {
      * @param code
      */
     void deleteByCode(String code);
+
+
+    /**
+     * 查询所有个股的roe平均值数据 （近十年平均roe）
+     * @return
+     */
+    List<StkIndexValuePojo> selectRoeAvg();
 }

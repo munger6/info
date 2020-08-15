@@ -10,6 +10,10 @@ import java.util.Map;
  */
 public interface ModeFilterContionStrategy {
 
+    String comparType = "comparType";
+
+    String comparValue = "comparValue";
+
     /**
      * 过滤证券代码信息
      * @param stkStockAlls   证券集合

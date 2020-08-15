@@ -1,8 +1,10 @@
 package com.stock.info.service.mode.context;
 
 
+import com.stock.info.Util.ComparUtil;
 import com.stock.info.constant.enums.ExcelLineTypeEnum;
 import com.stock.info.constant.enums.FilterContionTypeEnum;
+import com.stock.info.constant.enums.FutureTypeEnum;
 import com.stock.info.constant.enums.IndexMessageEnum;
 
 import java.util.ArrayList;
@@ -28,11 +30,13 @@ public class EarningsConfig {
             List<Map<String, Object>> stockFilterConditions = new ArrayList<>();
             Map<String, Object> condition = new HashMap<>();
             condition.put("index", FilterContionTypeEnum.LISTING_TIME_TOTAL.getCode());
-            condition.put("comparFormula","{index} >= 10");
+            condition.put("comparType", ComparUtil.ge);
+            condition.put("comparValue",7);
             stockFilterConditions.add(condition);
             condition = new HashMap<>();
             condition.put("index", FilterContionTypeEnum.ROE_AVG_TEN.getCode());
-            condition.put("comparFormula","{index} >= 15");
+            condition.put("comparType",ComparUtil.ge);
+            condition.put("comparValue",15);
             stockFilterConditions.add(condition);
 
             //指标信息汇总(年净利润  、 年净资产)
@@ -44,11 +48,14 @@ public class EarningsConfig {
 
             //行信息汇总 line5- 净利润；  line6-总股本；   line7-净资产；   line8-ROE（加权平均）；  line9-空白
             List<ExcelLineRule> lineRules = new ArrayList<>();
-            lineRules.add(new ExcelLineRule("净利润", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.INCOME.getCode()));
-            lineRules.add(new ExcelLineRule("总股本", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.TOTAL_SHARE.getCode()));
-            lineRules.add(new ExcelLineRule("净资产", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.EQUITY.getCode()));
-            lineRules.add(new ExcelLineRule("ROE(加权平均)", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.ROE.getCode()));
-            lineRules.add(new ExcelLineRule("", ExcelLineTypeEnum.BLANK.getCode(),""));
+            Map<String,Object> futureCompuateMap = new HashMap<>();
+            futureCompuateMap.put("speed",1.1);
+            ExtendLineRule extendLineRule = new ExtendLineRule(5, FutureTypeEnum.SPEED.getCode(),futureCompuateMap);
+            lineRules.add(new ExcelLineRule("净利润", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.INCOME.getCode(),null,extendLineRule));
+            lineRules.add(new ExcelLineRule("总股本", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.TOTAL_SHARE.getCode(),10));
+            lineRules.add(new ExcelLineRule("净资产", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.EQUITY.getCode(),15));
+            lineRules.add(new ExcelLineRule("ROE(加权平均)", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.ROE.getCode(),15));
+            lineRules.add(new ExcelLineRule("", ExcelLineTypeEnum.BLANK.getCode(),"",null));
 
             // line10 - RE
             ExcelLineRule lineRule = new ExcelLineRule("RE", ExcelLineTypeEnum.EXPRESSION.getCode(),"{param_B}7*({param_C}8-$C$2)",true);
@@ -87,7 +94,7 @@ public class EarningsConfig {
             lineRule.setVariableParam(variableParam);
             lineRules.add(lineRule);
 
-            lineRules.add(new ExcelLineRule("", ExcelLineTypeEnum.BLANK.getCode(),""));
+            lineRules.add(new ExcelLineRule("", ExcelLineTypeEnum.BLANK.getCode(),"",1));
             //line15 - 当前价值 =   永续价值  +  未来五年的折现  +  净资产 + 当年利润 -当年分红 + 5年剩余价值
             lineRule = new ExcelLineRule("总价值", ExcelLineTypeEnum.EXPRESSION.getCode(),"({param_C}5 + {param_C}13 + {param_C}14)/{param_C}6",true);
             variableParam = new ArrayList<>();
@@ -95,7 +102,7 @@ public class EarningsConfig {
             lineRule.setVariableParam(variableParam);
             lineRules.add(lineRule);
 
-            lineRules.add(new ExcelLineRule("年末股价", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.PRICE_M.getCode()));
+//            lineRules.add(new ExcelLineRule("年末股价", ExcelLineTypeEnum.INDEX.getCode(),IndexMessageEnum.PRICE_M.getCode(),10));
 
             ModeExcelCreateRule taotaoModeRule = new ModeExcelCreateRule(stockFilterConditions,indexList,lineRules );
             taotaoModeRule.setDataTimeLong(5);

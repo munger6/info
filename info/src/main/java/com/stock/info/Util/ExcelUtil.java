@@ -1,5 +1,10 @@
 package com.stock.info.Util;
 
+import com.stock.info.constant.enums.FutureTypeEnum;
+import com.stock.info.service.mode.context.ExcelLineRule;
+import com.stock.info.service.mode.context.ExtendLineRule;
+import com.stock.info.service.mode.context.ModeExcelCreateRule;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -14,6 +19,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /***
  *  excel工具类：提供excel写入的基础方法
@@ -84,6 +90,69 @@ public class ExcelUtil {
      *
      * @param book     excel文件
      * @param sheet     sheet
+     * @param rule     行规则信息
+     * @param columnData 每一列的数据
+     * @param mode 模型类型
+     * @param line 行号
+     * @return 返回行对象，row可用于获取特定单元格row.getCell()，再进行特定的设置（不想使用这个默认设置的时候）
+     */
+    public static HSSFRow createRow(HSSFWorkbook book, HSSFSheet sheet, ExcelLineRule rule, List<String> columnData, String mode, int line) {
+        HSSFRow row = sheet.createRow(line);
+        row.setHeight((short) (21 * 15.625));
+        //行标题
+        HSSFCell cell = row.createCell(0);//新建单元格
+        HSSFRichTextString text = new HSSFRichTextString(rule.getLineName());
+        cell.setCellValue(text);//设置文本
+
+        int start = rule.isFirstBlank()? 2 : 1;
+        //行基础数据
+        for (int i = 0; i < columnData.size(); i++) {
+            cell = row.createCell(i + start);//新建单元格
+            setSizeIfNecessary(sheet, i, columnData.get(i));
+            if(NumberUtils.isDigits(columnData.get(i))){
+                cell.setCellValue(new BigDecimal(columnData.get(i)).doubleValue());//设置文本
+            }else{
+                if(MODE_FORMULA.equals(mode) && i > 0){
+                    cell.setCellFormula(columnData.get(i));
+                }else{
+                    text = new HSSFRichTextString(columnData.get(i));
+                    cell.setCellValue(text);//设置文本
+                }
+            }
+            cell.setCellStyle(getDefaultCellStyle(book));//设置样式
+        }
+
+        ExtendLineRule extendLineRule = rule.getExtendLineRule();
+        if(extendLineRule != null){
+            int length = extendLineRule.getFutureLineLength();
+            String type = extendLineRule.getFutureCompuateType();
+            Map<String,Object> param = extendLineRule.getFutureCompuateMap();
+            //行扩展数据
+            start += columnData.size();
+            int startline = line + 1;
+            String cellNumber = StringUtil.addAsciiCode("A",start -1) + startline;
+            //扩展函数仅满足了均速计算增速 ：  以后需满足更多场景
+            if(FutureTypeEnum.SPEED.getCode().contains(type)){
+                BigDecimal speed = new BigDecimal(MapUtils.getDoubleValue(param,"speed",0));
+                //大于0
+                if(speed.compareTo(new BigDecimal(0)) == 1){
+                    for (int i = 0; i < length; ) {
+                        i++;
+                        cell = row.createCell(i + start);//新建单元格
+                        cell.setCellFormula(cellNumber + " * " + speed.pow(i));
+                    }
+                }
+            }
+        }
+        return row;
+    }
+
+
+    /**
+     * 创建具体的一行
+     *
+     * @param book     excel文件
+     * @param sheet     sheet
      * @param rowNum     行号
      * @param columnData 每一列的数据
      * @return 返回行对象，row可用于获取特定单元格row.getCell()，再进行特定的设置（不想使用这个默认设置的时候）
@@ -108,6 +177,7 @@ public class ExcelUtil {
         }
         return row;
     }
+
 
     //单元格数据表达式：  方式
     private final static String MODE_FORMULA = "experisson";
