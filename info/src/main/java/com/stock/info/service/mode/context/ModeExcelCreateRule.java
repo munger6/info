@@ -37,6 +37,8 @@ public class ModeExcelCreateRule {
     private Integer dataTimeLong;
     //预测时长
     private Integer forecastTimeLong;
+    //计价单位：亿元 1<<3    /百万 1<<2   /万元 1<<1   /元  1
+    private int unit;
 
     public ModeExcelCreateRule(List<Map<String, Object>> stockFilterConditions, List<IndexMessage> indexList, List<ExcelLineRule> lineRules) {
         this.stockFilterConditions = stockFilterConditions;
@@ -45,6 +47,15 @@ public class ModeExcelCreateRule {
     }
 
     //get and set
+
+    public int getUnit() {
+        return unit;
+    }
+
+    public void setUnit(int unit) {
+        this.unit = unit;
+    }
+
     public int getStartLine() {
         return startLine;
     }

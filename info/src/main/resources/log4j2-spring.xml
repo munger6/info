@@ -21,7 +21,7 @@
         </encoder>
         <!--此日志appender是为开发使用，只配置最低级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>debug</level>
+            <level>trace</level>
         </filter>
     </appender>
     <!-- 时间滚动输出 level为 DEBUG 日志 -->
@@ -100,7 +100,7 @@
         </rollingPolicy>
         <!-- 此日志文件只记  录warn级别的 -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>warn</level>
+            <level>info</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>

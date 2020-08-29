@@ -9,6 +9,8 @@ public enum  FutureTypeEnum {
     FIT_SPEED("fit_speed","拟合增速"),
     /**固定增速*/
     SUM("sum","加总"),
+    /**表达式方式*/
+    EXPRESSION("EXPRESSION","表达式方式"),
 
     ;
     /**

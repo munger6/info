@@ -55,18 +55,44 @@
     from stk_stock_all order by ts_code asc
   </select>
 
-  <select id="selectIndexMessage" resultType="java.util.List" >
-    select #{indexColumnName}    from  #{indexTable}
-    where
-    end_date in
-    <foreach collection="dateList" item="item" index="index"
-             open="(" close=")" separator=",">
-      #{item}
-    </foreach>
+  <select id="selectAllByContion" resultMap="BaseResultMap"  parameterType="com.stock.info.domain.queryObject.StkStockAllQueryObject">
+    select ts_code, symbol, `name`, area, industry, fullname, enname, market, exchange,
+    curr_type, list_status, list_date, delist_date, is_hs, create_date
+    from stk_stock_all
+     <where>
+       <if test="tsCodeList!=null and tsCodeList.size > 0 ">
+         AND ts_code in
+         <foreach collection="tsCodeList" open="(" close=")" separator="," item="tsCode" index="index">
+           #{tsCode}
+         </foreach>
+       </if>
+       <if test="tsCode!=null and tsCode  != '' ">
+         AND ts_code = #{tsCode}
+       </if>
+     </where>
+     order by ts_code asc
+  </select>
 
-    <if  test = "contion!= null and  contion != ''">
-      and #{exchange}
+  <!--非预编译执行：  动态设置表名和 查询字段采用预编译方式-->
+  <select id="selectIndexMessage" resultType="java.util.Map" parameterType="java.util.Map">
+    select  ${indexColumnName} as indexData , end_date as indexDate  from  ${indexTable}
+    where  1=1
+
+    <!--# 使用入参为字符串吗？-->
+    <if test="tsCode!=null and tsCode  != '' ">
+      AND ts_code = #{tsCode}
     </if>
+    <if test="dateList!=null and dateList.size > 0 ">
+      and  end_date in
+      <foreach  collection="dateList" item="item" open="(" close=")" separator=",">
+        ${item}
+      </foreach>
+    </if>
+
+
+    <!--<if  test = "contion!= null and  contion != ''">-->
+      <!--and #{exchange}-->
+    <!--</if>-->
     order by end_date desc
   </select>
 

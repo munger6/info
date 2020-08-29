@@ -2,6 +2,7 @@ package com.stock.info.Util;
 
 import com.stock.info.constant.PublicConstant;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Map;
 
@@ -33,7 +34,13 @@ public class StringUtil {
      * @param i
      */
     public static String addAsciiCode(String val, int i) {
-        char c = val.charAt(1);
+        if(NumberUtils.isCreatable(val)){
+            //兼容数字形式的增加（超过9之后）
+            Integer index = Integer.valueOf(val);
+            index += i;
+            return index + "";
+        }
+        char c = val.charAt(0);
         int number = (int) c;
         number += i;
         return String.valueOf((char) number);

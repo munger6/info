@@ -14,11 +14,19 @@ public class IndexMessage {
     //指标周期（支持年--YEAR /季度）
     private String period = PublicConstant.YEAR;
 
-    public IndexMessage(IndexMessageEnum indexMessageEnum) {
+    //指标周期（支持年--YEAR /季度）
+    private boolean isUnitRate = false;
+
+    public IndexMessage(IndexMessageEnum indexMessageEnum, boolean isUnitRate) {
         this.indexMessageEnum = indexMessageEnum;
+        this.isUnitRate = isUnitRate;
     }
 
     //get and set
+    public boolean isUnitRate() {
+        return isUnitRate;
+    }
+
     public String getIndexCode() {
         if(indexMessageEnum == null){
             return "";

@@ -5,6 +5,7 @@ import com.stock.info.service.mode.StockEarningsModeService;
 import com.stock.info.service.mode.context.EarningsContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,10 @@ import org.springframework.stereotype.Service;
 @Service
 @Repository
 public class StkStockExcelServiceImpl implements StkStockExcelService {
-    @jdk.nashorn.internal.runtime.logging.Logger
     private Logger logger = LoggerFactory.getLogger("WARN_FILE");
 
 
+    @Autowired
     private StockEarningsModeService stockEarningsModeService;
 
 

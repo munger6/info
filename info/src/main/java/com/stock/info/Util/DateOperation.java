@@ -2,12 +2,14 @@ package com.stock.info.Util;
 
 import org.apache.commons.lang3.time.DateUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DateOperation extends DateUtils {
 
     public final static String DAY = "yyyyMMdd";
+    public final static String LONG_DATE = "yyyyMMddHHmmss";
     public final static String YEAR =  "yyyy";
 
 
@@ -20,12 +22,11 @@ public class DateOperation extends DateUtils {
 
     public static Date getStartYear(Date date) {
         if(date != null){
-            date = setMonths(date,0);
-            date = setDays(date,0);
-            date = setHours(date,0);
-            date = setMinutes(date,0);
-            date = setMilliseconds(date,0);
-            date = setSeconds(date,0);
+            try {
+                return parseDate(formatDate(date,YEAR) + "0101000000",LONG_DATE);
+            } catch (ParseException e) {
+                return date;
+            }
         }
         return date;
     }

@@ -6,6 +6,7 @@ import com.stock.info.Util.PublicUtil;
 import com.stock.info.dao.StkFinanceIndicatorMapper;
 import com.stock.info.domain.entity.StkStockAll;
 import com.stock.info.domain.pojo.StkIndexValuePojo;
+import com.stock.info.domain.queryObject.StkStockAllQueryObject;
 import com.stock.info.service.mode.ModeFilterContionStrategy;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +36,16 @@ public class RoeAvgFilterContionStrategy implements ModeFilterContionStrategy {
         String type = MapUtils.getString(param,comparType);
         double value = MapUtils.getInteger(param,comparValue);
         StkStockAll stkStockAll;
-        List<StkIndexValuePojo> stkIndexValuePojos = stkFinanceIndicatorMapper.selectRoeAvg();
-        Map<String, StkIndexValuePojo> valuePojoMap = PublicUtil.converListToMap(stkIndexValuePojos,"tscode");
+        StkStockAllQueryObject queryObject = new StkStockAllQueryObject();
+        if(stkStockAlls.size() < 1000){
+            queryObject.setTsCodeList(PublicUtil.converListToListStr(stkStockAlls, "tsCode"));
+        }
+        List<StkIndexValuePojo> stkIndexValuePojos = stkFinanceIndicatorMapper.selectRoeAvg(queryObject);
+        Map<String, StkIndexValuePojo> valuePojoMap = PublicUtil.converListToMap(stkIndexValuePojos,"tsCode");
         for (int i = 0; i < stkStockAlls.size(); i++) {
             stkStockAll = stkStockAlls.get(i);
             if(valuePojoMap.containsKey(stkStockAll.getTsCode())
-                    && ComparUtil.compar(type,valuePojoMap.get(stkStockAll.getTsCode()).getValue(),value)){
+                    && ComparUtil.compar(type,valuePojoMap.get(stkStockAll.getTsCode()).getIndexValue(),value)){
                 result.add(stkStockAll);
             }
         }

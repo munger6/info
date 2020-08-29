@@ -1,15 +1,20 @@
 package com.stock.info.Util;
 
+import com.alibaba.fastjson.JSON;
+import com.stock.info.constant.enums.ExcelLineTypeEnum;
 import com.stock.info.constant.enums.FutureTypeEnum;
 import com.stock.info.service.mode.context.ExcelLineRule;
 import com.stock.info.service.mode.context.ExtendLineRule;
-import com.stock.info.service.mode.context.ModeExcelCreateRule;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +23,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +33,9 @@ import java.util.Map;
  *      支持为excel2007 xmlx格式文件
  */
 public class ExcelUtil {
+
     private static final int DEFAULT_WIDTH = 12;
+    private static Logger logger = LoggerFactory.getLogger("WARN_FILE");
 
     //不允许new这个工具类
     private ExcelUtil() {
@@ -106,20 +114,25 @@ public class ExcelUtil {
 
         int start = rule.isFirstBlank()? 2 : 1;
         //行基础数据
-        for (int i = 0; i < columnData.size(); i++) {
-            cell = row.createCell(i + start);//新建单元格
-            setSizeIfNecessary(sheet, i, columnData.get(i));
-            if(NumberUtils.isDigits(columnData.get(i))){
-                cell.setCellValue(new BigDecimal(columnData.get(i)).doubleValue());//设置文本
-            }else{
-                if(MODE_FORMULA.equals(mode) && i > 0){
-                    cell.setCellFormula(columnData.get(i));
+        try {
+            for (int i = 0; i < columnData.size(); i++) {
+                cell = row.createCell(i + start);//新建单元格
+                setSizeIfNecessary(sheet, i, columnData.get(i));
+                if(NumberUtils.isDigits(columnData.get(i))){
+                    cell.setCellValue(new BigDecimal(columnData.get(i)).doubleValue());//设置文本
                 }else{
-                    text = new HSSFRichTextString(columnData.get(i));
-                    cell.setCellValue(text);//设置文本
+                    if( ExcelLineTypeEnum.EXPRESSION.getCode().equals(mode)){
+                        cell.setCellFormula(columnData.get(i));
+                    }else{
+                        text = new HSSFRichTextString(columnData.get(i));
+                        cell.setCellValue(text);//设置文本
+                    }
                 }
+                cell.setCellStyle(getDefaultCellStyle(book));//设置样式
             }
-            cell.setCellStyle(getDefaultCellStyle(book));//设置样式
+        } catch (Exception e) {
+            logger.error(String.format("excel写入失败：计算规则：%s;  参数值：%s", JSON.toJSONString(rule),columnData),e);
+            Assert.isTrue(true,String.format("excel写入失败：计算规则：%s;  参数值：%s", JSON.toJSONString(rule),columnData));
         }
 
         ExtendLineRule extendLineRule = rule.getExtendLineRule();
@@ -130,17 +143,35 @@ public class ExcelUtil {
             //行扩展数据
             start += columnData.size();
             int startline = line + 1;
-            String cellNumber = StringUtil.addAsciiCode("A",start -1) + startline;
+            String cellNumber = StringUtil.addAsciiCode("A",start -2) + startline;
             //扩展函数仅满足了均速计算增速 ：  以后需满足更多场景
             if(FutureTypeEnum.SPEED.getCode().contains(type)){
                 BigDecimal speed = new BigDecimal(MapUtils.getDoubleValue(param,"speed",0));
                 //大于0
                 if(speed.compareTo(new BigDecimal(0)) == 1){
-                    for (int i = 0; i < length; ) {
-                        i++;
+                    for (int i = 0; i < length; i++) {
                         cell = row.createCell(i + start);//新建单元格
-                        cell.setCellFormula(cellNumber + " * " + speed.pow(i));
+                        cell.setCellFormula(String.format("%s * %s",cellNumber,PublicUtil.powFormat(speed, i + 1, 3)));
                     }
+                }
+            }else if(FutureTypeEnum.EXPRESSION.getCode().contains(type)){
+                String expersion  = MapUtils.getString(param, ExcelLineTypeEnum.EXPRESSION.getCode());
+                if(StringUtils.isBlank(expersion)){
+                    logger.error(String.format("指标行[%s]扩展属性设置出错，表达式不存在,参数详情%s；",rule.getLineName(),rule.getExtendLineRule().getFutureCompuateMap()));
+                    return row;
+                }
+                String tempExpersion = "";
+                for (int i = 0; i < length; i++) {
+                    Map<String,String> tempVariable = new HashMap<>();
+                    List<String> variableParam = (List<String>) MapUtils.getObject(param,"index");
+                    for (String value : variableParam) {
+                        if(StringUtils.isNotBlank(value)){
+                            tempVariable.put("param_" + value, StringUtil.addAsciiCode(value,i));
+                            tempExpersion = StringUtil.replaceAll(expersion,tempVariable);
+                        }
+                    }
+                    cell = row.createCell(i + start);//新建单元格
+                    cell.setCellFormula(tempExpersion);
                 }
             }
         }
@@ -296,21 +327,29 @@ public class ExcelUtil {
      *
      * @param book  excel文件
      * @param filePath 文件全路径
+     * @param fileName 文件名
      * @throws IOException 文件操作异常
      */
-    public static void saveExcelFile(HSSFWorkbook book,String filePath) {
+    public static void saveExcelFile(HSSFWorkbook book,String filePath,String fileName) {
         FileOutputStream fileOutputStream = null;
         try {
 //            filePath   获取当前文档的命名信息
-            fileOutputStream = new FileOutputStream(filePath);//指定路径与名字和格式
+            File file = new File(filePath);
+            if(!file.exists()){
+                //当路径不存在则进行创建文件操作；
+                file.mkdirs();
+            }
+            fileOutputStream = new FileOutputStream(filePath + fileName);//指定路径与名字和格式
             book.write(fileOutputStream);//将数据写出去
             fileOutputStream.close();//关闭输出流
         } catch (IOException e) {
-            if(fileOutputStream == null){
+           logger.error("输出文档报错：",e);
+        }finally {
+            if(fileOutputStream != null){
                 try {
                     fileOutputStream.close();//关闭输出流
                 } catch (IOException e1) {
-
+                    logger.error("关闭输出流失败！", e1);
                 }
             }
         }

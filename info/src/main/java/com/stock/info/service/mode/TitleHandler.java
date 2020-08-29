@@ -22,6 +22,6 @@ public interface TitleHandler {
      * @param endDate    结束时间
      * @return
      */
-    XSSFWorkbook createTitle(StkStockAll stk,HSSFWorkbook book , HSSFSheet sheet, EarningsContext context, Date startDate, Date endDate);
+    HSSFWorkbook createTitle(StkStockAll stk,HSSFWorkbook book , HSSFSheet sheet, EarningsContext context, Date startDate, Date endDate);
 
 }

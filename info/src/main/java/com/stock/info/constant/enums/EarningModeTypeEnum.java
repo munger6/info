@@ -7,9 +7,9 @@ import org.springframework.util.StringUtils;
  */
 public enum  EarningModeTypeEnum {
     /**折现因子模型*/
-    TAO_MODE("1","涛哥折现财务模型"),
+    TAO_MODE("taotaoMode","涛哥折现财务模型"),
     /**roce模型*/
-    LIN_MODE("2","杨林ROIC财务模型"),
+    LIN_MODE("yanglinMode","杨林ROIC财务模型"),
     ;
 
     /**

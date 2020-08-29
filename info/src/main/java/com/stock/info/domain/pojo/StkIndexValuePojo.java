@@ -4,7 +4,7 @@ public class StkIndexValuePojo {
     /**证券代码*/
     private String tsCode;
     /**指标值*/
-    private Double value;
+    private Double indexValue;
 
     //get and set
     public String getTsCode() {
@@ -15,22 +15,19 @@ public class StkIndexValuePojo {
         this.tsCode = tsCode;
     }
 
-    public Double getValue() {
-        return value;
+    public Double getIndexValue() {
+        return indexValue;
     }
 
-    public void setValue(Double value) {
-        this.value = value;
+    public void setIndexValue(Double indexValue) {
+        this.indexValue = indexValue;
     }
-
-
-
 
     @Override
     public String toString() {
         return "StkIndexValuePojo{" +
                 "tsCode='" + tsCode + '\'' +
-                ", value=" + value +
+                ", indexValue=" + indexValue +
                 '}';
     }
 }

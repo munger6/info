@@ -1,5 +1,7 @@
 package com.stock.info.service.mode.context;
 
+import org.springframework.util.Assert;
+
 public class EarningsContext {
 
     //证券代码
@@ -18,10 +20,12 @@ public class EarningsContext {
      * @return
      */
     public static EarningsContext getContext(String type, String timeLong,String tsCode) {
+        ModeExcelCreateRule ruleByType = EarningsConfig.getRuleByType(type);
+        Assert.isTrue(ruleByType != null,String.format("模型【%s】未支持",type));
         EarningsContext context = new EarningsContext();
         context.setTimeLong(timeLong);
         context.setType(type);
-        context.setRule(EarningsConfig.getRuleByType(type));
+        context.setRule(ruleByType);
         context.setTsCode(tsCode);
         return context;
     }

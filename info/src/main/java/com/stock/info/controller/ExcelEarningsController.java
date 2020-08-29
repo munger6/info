@@ -5,10 +5,13 @@ import com.stock.info.Util.PublicUtil;
 import com.stock.info.constant.enums.EarningModeTypeEnum;
 import com.stock.info.domain.ResultPage;
 import com.stock.info.service.StkStockExcelService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * 财报生成excel报表
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "excel")
 public class ExcelEarningsController {
 
+    private Logger logger = LoggerFactory.getLogger("WARN_FILE");
 
     @Autowired
     StkStockExcelService stkStockExcelService;
@@ -45,7 +49,7 @@ public class ExcelEarningsController {
     /**
      * 财务报表建模
      * @param code   证券代码，不传则按照条件查询所有符合条件证券代码进行计算
-     * @param type   模型-1  王重涛建模     模型-2 杨林建模
+     * @param type   模型-taotao  王重涛建模     模型-2 杨林建模
      * @param timeLong   时长信息
      * @return
      */
@@ -59,9 +63,13 @@ public class ExcelEarningsController {
                 return PublicUtil.initResult(false,"请传入有效的模型类型",null);
             }
             boolean isSuccess = stkStockExcelService.createEarningsModeExcel(code, type, timeLong);
-            return PublicUtil.initResult(isSuccess,"创建证券代码"+code+"财务报表信息成功",isSuccess);
+            if(isSuccess){
+                return PublicUtil.initResult(isSuccess,"创建证券代码"+code+"财务报表信息成功",isSuccess);
+            }
+            return PublicUtil.initResult(isSuccess,"创建证券代码"+code+"财务报表信息失败",isSuccess);
         } catch (Exception e) {
-            return PublicUtil.initResult(false,"创建证券代码"+code+"财务报表信息失败,失败原因：" + e.getMessage(),null);
+            logger.error("创建证券代码"+code+"财务报表信息失败；",e);
+            return PublicUtil.initResult(false,"创建证券代码"+code+"财务报表信息失败,失败原因：",null);
         }
     }
 
