@@ -5,21 +5,24 @@ import com.alibaba.fastjson.JSONArray;
 import com.stock.info.constant.PublicConstant;
 import org.apache.commons.collections.MapUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 public class HttpUtil {
 
@@ -89,7 +92,7 @@ public class HttpUtil {
      * @param headerMap
      * @return
      */
-    public static String doPost(String url, Map<String, Object> paramMap, Map<String,String> headerMap) {
+    public static String doPost(String url, Map<String, Object> paramMap, Map<String,String> headerMap){
         CloseableHttpClient httpClient = null;
         CloseableHttpResponse httpResponse = null;
         String result = "";
@@ -113,33 +116,36 @@ public class HttpUtil {
             //默认使用raw的请求
             httpPost.addHeader("Content-Type", "application/json");
             httpPost.addHeader("Connection", "keep-alive");
+            httpPost.addHeader("Accept-Encoding", "gzip, deflate, br");
         }
-        // 封装post请求参数
-        if (MapUtils.isNotEmpty(paramMap)) {
-//            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-//            // 通过map集成entrySet方法获取entity
-//            Set<Map.Entry<String, Object>> entrySet = paramMap.entrySet();
-//            // 循环遍历，获取迭代器
-//            Iterator<Map.Entry<String, Object>> iterator = entrySet.iterator();
-//            while (iterator.hasNext()) {
-//                Map.Entry<String, Object> mapEntry = iterator.next();
-//                nvps.add(new BasicNameValuePair(mapEntry.getKey(), mapEntry.getValue().toString()));
-//            }
 
-            //                httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
-            // 为httpPost设置封装好的raw请求参数
-            httpPost.setEntity(new StringEntity(JSON.toJSONString(paramMap), "UTF-8"));
-        }
         try {
+            // 封装post请求参数
+            if (MapUtils.isNotEmpty(paramMap)) {
+//                List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+//                // 通过map集成entrySet方法获取entity
+//                Set<Map.Entry<String, Object>> entrySet = paramMap.entrySet();
+//                // 循环遍历，获取迭代器
+//                Iterator<Map.Entry<String, Object>> iterator = entrySet.iterator();
+//                while (iterator.hasNext()) {
+//                    Map.Entry<String, Object> mapEntry = iterator.next();
+//                    nvps.add(new BasicNameValuePair(mapEntry.getKey(), mapEntry.getValue().toString()));
+//                }
+//                httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+
+                // 为httpPost设置封装好的raw请求参数
+                httpPost.setEntity(new StringEntity(JSON.toJSONString(paramMap), "UTF-8"));
+            }
+
             // httpClient对象执行post请求,并返回响应参数对象
             httpResponse = httpClient.execute(httpPost);
             // 从响应对象中获取响应内容
             HttpEntity entity = httpResponse.getEntity();
             result = EntityUtils.toString(entity);
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+           logger.error("HTTP请求参数设置异常",e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("HTTP请求IO异常",e);
         } finally {
             // 关闭资源
             if (null != httpResponse) {

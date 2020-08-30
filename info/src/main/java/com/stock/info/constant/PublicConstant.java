@@ -2,9 +2,15 @@ package com.stock.info.constant;
 
 public class PublicConstant {
 
-    //tushare token
-    public static String tushareToken = "bd62225a825f88e695827523eba9033aa9276b9f4a4503d38756a640";
-
+    /**标点符号*/
     //下滑线
     public static String overbar = "_";
+    //下滑线
+    public static String COMMA = ",";
+
+    /**时间概念*/
+    //年
+    public static String YEAR = "YEAR";
+    //季度
+    public static String QUARTER = "QUARTER";
 }

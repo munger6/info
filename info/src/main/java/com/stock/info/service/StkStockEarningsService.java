@@ -40,6 +40,16 @@ public interface StkStockEarningsService {
 
 
     /**
+     * 下载指定个股的所有财报信息
+     *      （市场行情信息）
+     * @param code
+     * @return
+     */
+    public String downloadMarketPriceMonthly(String code);
+
+
+
+    /**
      * 从tushare下载利润表数据
      * @param code       证券代码
      * @param date       公告日期
@@ -95,5 +105,11 @@ public interface StkStockEarningsService {
      */
     public String downloadMainbzFromTushare(String code, String type, String startDate, String endDate, String period);
 
+
+    /**
+     * 下载市场行情数据
+     * @param code    下载个股代码（无入参则为下载所有）
+     */
+    public void downloadMarketFromTushare(String code);
 
 }

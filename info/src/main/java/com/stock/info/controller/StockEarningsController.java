@@ -89,8 +89,8 @@ public class StockEarningsController {
         try {
             Assert.isTrue(!StringUtils.isEmpty(code),"请传入有效证券代码");
             //暂时无需使用公司类型（compType）
-//            String data = stkStockEarningsService.downloadIncomeFromTushare(code, date, startDate, endDate, period,reportType);
-            String data = stkStockEarningsService.downloadMainbzFromTushare(code, "", "", "", "");
+            String data = stkStockEarningsService.downloadIncomeFromTushare(code, date, startDate, endDate, period,reportType);
+//            String data = stkStockEarningsService.downloadMainbzFromTushare(code, "", "", "", "");
             ResultPage page = new ResultPage(true,"更新成功",data);
             return  page;
         }catch (Exception e){
@@ -105,10 +105,10 @@ public class StockEarningsController {
      * @param code
      * @return
      */
-    @RequestMapping(value = "downloadFinanceFromTushare" , method = RequestMethod.POST)
-    public ResultPage downloadFinanceFromTushare(@RequestParam( required = false , defaultValue = "") String code){
+    @RequestMapping(value = "downloadMarketFromTushare" , method = RequestMethod.POST)
+    public ResultPage downloadMarketFromTushare(@RequestParam( required = false , defaultValue = "") String code){
         try {
-            stkStockEarningsService.downloadFinanceFromTushare(code);
+            stkStockEarningsService.downloadMarketFromTushare(code);
             ResultPage page = new ResultPage(true,"更新成功",code);
             return  page;
         }catch (Exception e){

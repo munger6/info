@@ -54,6 +54,9 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
     @Autowired
     private StkStockAllMapper stkStockAllMapper;
 
+    @Autowired
+    private StkMarketPriceMonthlyMapper stkMarketPriceMonthlyMapper;
+
     //证券基础表
     protected static String testApiName = "stock_basic";
     //利润表
@@ -424,6 +427,77 @@ public class StkStockEarningsServiceImpl implements StkStockEarningsService {
         }
         return result;
     }
+
+
+
+    /***
+     * 查询市场行情-月   单词数据最大3700
+     * @param code       证券代码
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = {RuntimeException.class, Error.class})
+    public String downloadMarketPriceMonthly(String code){
+        Map<String, Object> paramMap = HttpUtil.initParam("monthly", token);
+        Map<String,Object> params = new HashMap<>();
+        params.put("ts_code",code);
+        params.put("trade_date","");
+        params.put("start_date","");
+        params.put("end_date","");
+        paramMap.put("params",params);
+        logger.warn("#####财报同步####downloadBalanceFromTushare（）查询条件" + paramMap);
+        String result = HttpUtil.doPost(HttpUtil.urlLinke,paramMap,null);
+        logger.warn("#####财报同步####downloadBalanceFromTushare（）查询结果" + result);
+        if(!StringUtils.isEmpty(result)){
+            JSONObject incomeData = JSON.parseObject(result);
+            if(incomeData != null && incomeData.containsKey("data")){
+                JSONArray array = incomeData.getJSONObject("data").getJSONArray("fields");
+                for (int i = 0; i < array.size(); i++) {
+                    array.set(i, StringUtil.convertSqlCodeToHump(array.getString(i)));
+                }
+                JSONArray items = incomeData.getJSONObject("data").getJSONArray("items");
+                List<StkMarketPriceMonthly> priceMonthlies = new ArrayList<>(items.size());
+                JSONArray data;
+                Map<String, Object> dataMap;
+                StkMarketPriceMonthly priceMonthly;
+                stkMarketPriceMonthlyMapper.deleteByCode(code);
+                for (int i = 0; i < items.size(); i++) {
+                    data = items.getJSONArray(i);
+                    dataMap = HttpUtil.processDataToMap(data, array);
+                    if(MapUtils.isNotEmpty(dataMap)){
+                        priceMonthly = BeanUtil.mapToBean(dataMap,StkMarketPriceMonthly.class);
+                        if(priceMonthly != null){
+                            priceMonthlies.add(priceMonthly);
+                            priceMonthly.setTradeDate(priceMonthly.getTradeDate().substring(0,6));
+                            stkMarketPriceMonthlyMapper.insert(priceMonthly);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+
+    //本接口仅适用于第一次全量行情类数据（）
+    @Override
+    public void downloadMarketFromTushare(String code) {
+        try {
+            if(StringUtils.isEmpty(code)){
+                List<StkStockAll> stockAlls = stkStockAllMapper.selectAll();
+                stockAlls.stream().forEach(stkStockAll->{
+                    String code1 =  stkStockAll.getTsCode();
+                    downloadMarketPriceMonthly(code1);
+                });
+            }else{
+                downloadMarketPriceMonthly(code);
+            }
+        } catch (Exception e) {
+            logger.warn("加载证券失败，证券代码：" + code,  e);
+        }
+    }
+
 
 
     //set
